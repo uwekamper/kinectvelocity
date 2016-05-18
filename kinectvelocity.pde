@@ -7,6 +7,7 @@
 
 import org.openkinect.freenect.*;
 import org.openkinect.processing.*;
+import ddf.minim.*;
 
 // The kinect stuff is happening in another class
 KinectTracker tracker;
@@ -14,8 +15,27 @@ Kinect kinect;
 int DEPTHWINDOW = 40;
 boolean showVideo = true;
 
+// sound stuff
+
+Minim minim;
+AudioSample exampleSound;
+AudioSample exampleSoundTwo;
+
+long lastTriggerTime = 0;
+
 void setup() {
   size(640, 520);
+  
+  minim = new Minim(this);
+  // setup sounds
+  // Put soundfiles in sketchbook/kinectvelocity/data/ 
+  exampleSound = minim.loadSample( "bum2.wav", // filename
+                            512      // buffer size
+                         );
+  exampleSoundTwo = minim.loadSample( "exampleSound.wav", // filename
+                            512      // buffer size
+                         );
+                         
   kinect = new Kinect(this);
   tracker = new KinectTracker();
 }
@@ -46,6 +66,20 @@ void draw() {
   double v = tracker.getVelocity();
   text("v: "+ v + " threshold: " + t + "    " +  "framerate: " + int(frameRate) + "    " + 
     "UP increase threshold, DOWN decrease threshold", 10, 500);
+    
+   if (v > 6.0 && v < 10.0) {
+     doTrigger(exampleSound);
+   }
+   else if (v >= 10.0) {
+     doTrigger(exampleSoundTwo);
+   }
+}
+
+void doTrigger(AudioSample sample) {
+  if (millis() - lastTriggerTime > 500) {
+    sample.trigger();
+    lastTriggerTime = millis();
+  }
 }
 
 // Adjust the threshold with key presses
